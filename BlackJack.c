@@ -54,39 +54,40 @@ Deck* initDeck() {
     return deck;
 }
 
-
 void shuffleDeck(Deck* deck) {
     if (deck->count <= 1) return;
 
-    Card** cards = (Card**)malloc(deck->count * sizeof(Card*));
     Card* current = deck->head;
-    int i = 0;
-    
-
-    while (current != NULL) {
-        cards[i++] = current;
-        current = current->next;
-    }
-
-
-    for (i = deck->count - 1; i > 0; i--) {
+    for (int i = deck->count - 1; i > 0; i--) {
         int j = rand() % (i + 1);
-        Card* temp = cards[i];
-        cards[i] = cards[j];
-        cards[j] = temp;
+
+        Card* target = deck->head;
+        Card* targetPrev = NULL;
+        for (int k = 0; k < j; k++) {
+            targetPrev = target;
+            target = target->next;
+        }
+
+        Card* currentPrev = NULL;
+        Card* currentCard = deck->head;
+        for (int k = 0; k < i; k++) {
+            currentPrev = currentCard;
+            currentCard = currentCard->next;
+        }
+
+        if (currentCard != target) {
+            if (currentPrev) currentPrev->next = target;
+            if (targetPrev) targetPrev->next = currentCard;
+
+            Card* temp = currentCard->next;
+            currentCard->next = target->next;
+            target->next = temp;
+
+            if (i == 0) deck->head = target;
+            if (j == 0) deck->head = currentCard;
+        }
     }
-
-
-    for (i = 0; i < deck->count - 1; i++) {
-        cards[i]->next = cards[i + 1];
-    }
-    cards[deck->count - 1]->next = NULL;
-    deck->head = cards[0];
-
-    free(cards);
 }
-
-
 Card* drawCard(Deck* deck) {
     if (deck->head == NULL) return NULL;
     
@@ -155,7 +156,7 @@ int main() {
             playerHand = newCard;
             playerScore += newCard->value;
 
-            printf("\nВаш�� карты:\n");
+            printf("\nВаши карты:\n");
             current = playerHand;
             while (current != NULL) {
                 printCard(current);
